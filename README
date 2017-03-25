@@ -40,6 +40,6 @@ Included Software
 -----------------
 
 This package contains software of third parties (excluded from license): 
- * dvbtext - Dave Chapman, GNU GPL v2+
- * vtx2ascii - Gerd, Martin Buck (No license supplied)
+ * dvbtext - Dave Chapman, GNU GPL v2+ (software sightly adapted)
+ * vtx2ascii - Gerd, Martin Buck (No license supplied) (software sightly adapted)
  * thttpd - Jef Poskanzer, 2 clause BSD (modified)
