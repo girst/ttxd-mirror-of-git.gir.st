@@ -30,10 +30,16 @@ Notes
 
 Currently, the service is using `/dev/dvb/adapter0` (PCIe 05:00.0) for ORF via DVB-T. 
 
+License
+-------
+
+(C) 2017 Tobias Girstmair
+This software is distributed under the GNU General Purpose License 3. 
+
 Included Software
 -----------------
 
-This package contains software of third parties: 
+This package contains software of third parties (excluded from license): 
  * dvbtext - Dave Chapman, GNU GPL v2+
  * vtx2ascii - Gerd, Martin Buck (No license supplied)
  * thttpd - Jef Poskanzer, 2 clause BSD (modified)
