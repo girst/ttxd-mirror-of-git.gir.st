@@ -1,0 +1,99 @@
+DVBtext - version 0.1
+---------------------
+
+CONTENTS OF THIS FILE:
+----------------------
+
+1. INSTALLATION
+2. USAGE
+3. AUTHOR AND CONTACT DETAILS
+4. COPYRIGHT NOTICE
+
+
+1. INSTALLATION
+---------------
+
+1) Modify the root spool directory (VTXDIR) at the start of dvbtext.c
+   and the path to the DVB/ost/include directory from the driver source.
+
+2) Compile the application by typing "make".
+
+3) Create your spool directory and 8 subdirectories numbered "1" to "8"
+   within that directory.  i.e.
+
+        mkdir /video/vtx
+        cd /video/vtx
+        mkdir 1 2 3 4 5 6 7 8
+
+   Obviously, these need to be writable by the user you run dvbtext as.
+
+4) [Move the dvbtext executable into your path - e.g. /usr/local/bin]
+
+NOTE: DVBtext uses the DVB driver's "new api".  You need to have the
+correct devices created under /dev/ost/.  If you don't have these, run
+the "makedev.napi" script in the DVB/driver directory.
+
+
+2. USAGE
+--------
+
+1) Tune your DVB card to a channel - e.g. using VDR.  
+2) Run dvbtext with a list of teletext PIDs for all the channels on the same
+   transponder as your tuned channel.
+
+e.g. Tune to ARD (11837h, sr: 27500, vpid: 101, apid:102) on Astra
+19E.  Then type:
+
+dvbtext 104 204 304 404 504 604 704 804
+
+to spool the teletext pages for ARD, BR3, Hessen-3, ARTE, SR3, WDR,
+BR-alpha and SWR BW simultaneously.
+
+You can then view a page from your console using (for example) the
+vtx2ascii program (contained in the oldstuff/vtx directory of the
+xawtv source).
+
+e.g. vtxc2ascii -c /video/vtx/1/100_00.vtx
+
+Displays a colour (text-only) version on an ANSI capable terminal.
+
+A channels.conf file for VDR (version 0.71pre2 or above) including
+teletext PIDs for many channels on Astra 19 is included with DVBtext.
+The teletext PID is the third field from the end - after the video and
+audio PIDs.
+
+NOTE: VDR and DVBtext can happily run together.  However, you will
+need to stop and restart dvbtext with different parameters when you
+change channels.
+
+
+3. AUTHOR AND CONTACT DETAILS
+-----------------------------
+
+DVBtext was written by Dave Chapman <dave@dchapman.com>.  The latest
+version is always available from CVS at
+http://sourceforge.net/projects/dvbtools/
+
+The project home page and released versions of the program can be
+found at http://www.linuxstb.org.
+
+Thanks to Ralph Metzler for developing the DVB driver, the vbidecode
+package (on which, DVBtext is based), and for answering my questions.
+
+
+4. COPYRIGHT NOTICE
+-------------------
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.

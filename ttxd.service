@@ -1,0 +1,12 @@
+[Unit]
+Description=Teletext Server (ttxd)
+After=network.target
+
+[Service]
+ExecStart=/opt/ttxd/serv.sh
+ExecStop=/usr/bin/killall dvbtext tzap thttpd
+KillMode=process
+Type=forking
+
+[Install]
+WantedBy=default.target

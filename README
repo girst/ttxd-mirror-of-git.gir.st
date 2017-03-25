@@ -1,0 +1,39 @@
+TELETEXT SERVER
+===============
+
+Installation
+------------
+
+1. `./install.sh` as root
+2. create `freqlist.conf` (see example in `src/`)
+3. `scan -a $ADAPTERNO freqlist.conf > channels.conf`
+4. use `ttxd.service` or `serv.sh` to start the service.
+
+Usage
+-----
+
+1. run `serv.sh` to tune the TV card and start spooling pages
+2. generate an HTML file by running `index.pl`
+
+Caveats
+-------
+
+ * The spool directory and DVB adapter number are hardcoded in `dvbtext`; its source is in `./src/dvbtext-src/dvbtext.c`.
+ * `index.pl`, `html.pl` and `plain.pl` do not support subpages other than 0.
+ * `serv.sh` does not check if the card has been tuned; it simply waits 5 seconds.
+ * The spool directory is `/run/ttxd/spool/`, to avoid disk wear.
+ * The accompaning systemd service is `/etc/systemd/system/ttx.service`, where the names of the processes `dvbtext`, `tzap`, and `thttpd` are hardcoded. 
+ * since `killall thttpd` is used to start and stop the service, rename that executable if you already running an instance of `thttpd` for other web services.
+
+Notes
+-----
+
+Currently, the service is using `/dev/dvb/adapter0` (PCIe 05:00.0) for ORF via DVB-T. 
+
+Included Software
+-----------------
+
+This package contains software of third parties: 
+ * dvbtext - Dave Chapman, GNU GPL v2+
+ * vtx2ascii - Gerd, Martin Buck (No license supplied)
+ * thttpd - Jef Poskanzer, 2 clause BSD (modified)

@@ -1,0 +1,24 @@
+
+'make' should build the whole thing.
+
+vtx2ascii is a simple converter, build out of the videotext sources.
+In fact only the main.c is my work, all other C code is just copyed
+from the videotext package.  Start it without arguments to get help.
+
+vtx.cgi is a cgi script for converting vtx-pages on-the-fly.  Lynx
+approved, with netscape 4 (style sheets required) you'll get colors.
+Uses vtx2ascii.  You have to adjust two config lines at the top of
+the script.  Usage is very simple, just copy it to your server's
+cgi-bin directory and point your browser to it.  If you want, you
+can hide it with a Alias like this one:
+	ScriptAlias /videotext /home/www/cgi/vtx.cgi	# in srm.conf
+
+vtx.cgi delivers a correct last-modified header (=> cacheable pages)
+for fast browsing.  For script hacking you probably want to turn this
+off...
+
+Known issues: can't show hidden text, 8-bit chars don't work (wrong
+mapping), probably more.  It is'nt tested much, sort of prototype.
+
+   Gerd
+
