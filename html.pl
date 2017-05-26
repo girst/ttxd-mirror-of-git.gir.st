@@ -11,40 +11,23 @@
 use strict;
 use warnings;
 use 5.010;
+# convert to utf-8 before outputting; WARN: still processes latin-1 (regexes too)!
 binmode STDOUT, ":encoding(utf8)";
-
-# Seitenformat: 
-#  100-109:
-#   Metadaten:      1
-#   Subressort:     2
-#   Ressort/Sparte: 3
-#   Leer            4
-#   Related:        5
-#   Leer            6
-#   Titel:          7
-#   Text:           8-24
-#
-#  112-899:
-#   Metadaten:      1
-#   Subressort:     2
-#   Ressort/Sparte: 3
-#   Leer            4
-#   Titel:          5
-#   Text:           6-24
-#   
 
 my %meta;
 my $title;
 my $text = "";
+# TODO: run tzap/dvbtext in background if not already running
 my $page = shift;
-my $subp = 0; #TODO: allow subpages
+my ($subpage) = $page=~m/\d{3}_(\d{2})/; #requires ppp_ss file name scheme! @parens: https://stackoverflow.com/a/10034105
+$subpage += 0; # convert to number to remove leading zero
 # run through vtx2ascii (has been modified to output correct ISO 8859-1 without national replacements)
 open (VTX, "./vtx2ascii -a $page |") || die ("Can'r run vtx2ascii");
 my $last = "";
 my $is_10x = 0;
 do {
-	# transliterate from ETSI EN 300 706 G0 German to Latin-1 (will be converted to UTF-8 by perl):
-	tr/[\\]{|}~/\N{U+C4}\N{U+D6}\N{U+DC}\N{U+E4}\N{U+F6}\N{U+FC}\N{U+DF}/;
+	# transliterate from ETSI EN 300 706 G0 German to latin-1 (ÄÖÜäöüß°§):
+	tr/[\\]{|}~`@/\N{U+C4}\N{U+D6}\N{U+DC}\N{U+E4}\N{U+F6}\N{U+FC}\N{U+DF}\N{U+B0}\N{U+A7}/;
 	my $line = $_;
 	$line =~ s/^\s+|\s+$//g;
 	chomp ($line);
@@ -56,21 +39,37 @@ do {
 		when (4) {}
 		when (5 + (1*$is_10x)) { $title = $line }
 		when (4 + (1*$is_10x)) {}
-		when (4 + (3*$is_10x)) { $title .=$line }
+		when (4 + (3*$is_10x)) { $title .=$line if ($title eq "")}
 		default { $text .= $last . "_EOL_" . ($last eq ""?"":($line eq ""?"<br>":" ")) }
 	}
 	$last = $line unless $. == (5+(2*$is_10x));
 } while (<VTX>);
 $text .= $last;
 
-#remove hyphenation at original line ending only when in between lowercase letters, replace with soft hyphen to still allow hyphenation when needed. ad _EOL_: linebreaks already stripped in loop above; wouldn't work either way due to single line regex.
+# substitute hyphenation:
+#  * replace with soft hyphen when it splits a word (between lowercase letters;
+#    still allows line break when necessary. 
+#  * keep, when followed by uppercase letter (e.g. "03-Jährige", "PIN-Nummer")
+#  * remove in any other case (was: forced hyphenation due to space constraints)
+# ad _EOL_: linebreaks already stripped in loop above; wouldn't work either way
+# due to single line regex. INFO: Underscore is in DE-localized teletext charset. 
 $text =~ s/([[:lower:]])-_EOL_ ([[:lower:]])/\1&shy;\2/g;
+$text =~ s/([[:alnum:]])-_EOL_ ([[:upper:]])/\1-\2/g;
 $text =~ s/_EOL_//g;
 
-# adblocker: just add more regexes
-$text =~ s/Kalendarium - t.glich neu \. 734//g;
+# remove ORFText idiosyncrasies
+$text =~ s/([[:alnum:]]),([[:alnum:]])/\1, \2/g; # no space after comma to save space
+$text =~ s/([[:alnum:]])\.([[:upper:][:digit:]])/\1. \2/g; # no space after period to save space (WARN: breaks URLS like tirol.ORF.at)
 
-print "<p>$meta{'page'}: <b>$title</b><br>$text</p>";
+# adblocker: (keep it 7bit-ASCII; perl processes latin1, but output will be utf8)
+$text =~ s/Kalendarium - t.glich neu \. 734//g;
+$text =~ s/>>tirol\. ?ORF\.at//g;
+
+my @tmp = split(' ',$meta{'date'});
+my $shortdate = substr $tmp[1], 0, 6;
+my $pagesubpage = $meta{'page'} . ($subpage > 0?".$subpage":"");
+my $moreinfo = "$meta{'res'} - $meta{'subres'}; $meta{'date'}";
+print "<p>$pagesubpage:</span> <b title='$moreinfo' onclick='javascript:alert(\"$moreinfo\")'>$title</b><br>$text</p>";
 
 close (VTX);
 
