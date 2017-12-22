@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 ExecStart=/opt/ttxd/serv.sh
-ExecStop=/usr/bin/killall dvbtext tzap thttpd
+ExecStop=/usr/bin/killall dvbtext tzap-t2 thttpd
 KillMode=process
 Type=forking
 

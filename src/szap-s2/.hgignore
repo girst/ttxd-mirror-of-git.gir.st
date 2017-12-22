@@ -1,0 +1,7 @@
+.pc
+\.rej$
+\.orig$
+~$
+\.[oad]$
+\.diff$
+\.patch$

@@ -17,7 +17,6 @@ binmode STDOUT, ":encoding(utf8)";
 my %meta;
 my $title;
 my $text = "";
-# TODO: run tzap/dvbtext in background if not already running
 my $page = shift;
 my ($subpage) = $page=~m/\d{3}_(\d{2})/; #requires ppp_ss file name scheme! @parens: https://stackoverflow.com/a/10034105
 $subpage += 0; # convert to number to remove leading zero
@@ -26,7 +25,7 @@ open (VTX, "./vtx2ascii -a $page |") || die ("Can'r run vtx2ascii");
 my $last = "";
 my $is_10x = 0;
 do {
-	# transliterate from ETSI EN 300 706 G0 German to latin-1 (ÄÖÜäöüß°§):
+	# transliterate from ETSI EN 300 706 G0 German to latin-1 (AOUaouBoS):
 	tr/[\\]{|}~`@/\N{U+C4}\N{U+D6}\N{U+DC}\N{U+E4}\N{U+F6}\N{U+FC}\N{U+DF}\N{U+B0}\N{U+A7}/;
 	my $line = $_;
 	$line =~ s/^\s+|\s+$//g;
@@ -49,19 +48,27 @@ $text .= $last;
 # substitute hyphenation:
 #  * replace with soft hyphen when it splits a word (between lowercase letters;
 #    still allows line break when necessary. 
-#  * keep, when followed by uppercase letter (e.g. "03-Jährige", "PIN-Nummer")
+#  * keep, when followed by uppercase letter (e.g. "PIN-Nummer")
+#  * keep, when after a digit (e.g "30-jaehriges")
 #  * remove in any other case (was: forced hyphenation due to space constraints)
 # ad _EOL_: linebreaks already stripped in loop above; wouldn't work either way
 # due to single line regex. INFO: Underscore is in DE-localized teletext charset. 
+# ad s/und/UND/: otherwise, "foo- und barbaz" will become "foound barbaz"
+$text =~ s/\bund\b/_UND_/g;
 $text =~ s/([[:lower:]])-_EOL_ ([[:lower:]])/\1&shy;\2/g;
 $text =~ s/([[:alnum:]])-_EOL_ ([[:upper:]])/\1-\2/g;
+$text =~ s/([[:digit:]])-_EOL_ ([[:alnum:]])/\1-\2/g;
+$text =~ s/_UND_/und/g;
 $text =~ s/_EOL_//g;
 
 # remove ORFText idiosyncrasies
-$text =~ s/([[:alnum:]]),([[:alnum:]])/\1, \2/g; # no space after comma to save space
-$text =~ s/([[:alnum:]])\.([[:upper:][:digit:]])/\1. \2/g; # no space after period to save space (WARN: breaks URLS like tirol.ORF.at)
+$text =~ s/([[:alnum:]]),([[:alpha:]])/\1, \2/g; # no space after comma to save space...
+$text =~ s/([[:alpha:]]),([[:alnum:]])/\1, \2/g; # ...but not between numbers
+$text =~ s/([[:alnum:]])\.([[:upper:]])/\1. \2/g; # no space after period to save space... (WARN: breaks URLS like tirol.ORF.at)
+$text =~ s/([[:alpha:]])\.([[:upper:][:digit:]])/\1. \2/g; # ...but not between numbers
+$text =~ s/([[:alnum:]]):([[:alnum:]])/\1: \2/g; # no space after colon to save space... TODO: doesn't work
 
-# adblocker: (keep it 7bit-ASCII; perl processes latin1, but output will be utf8)
+# adblocker: (keep it 7bit-ASCII; perl processes latin1, but this script is utf-8 encoded (output will be utf8 due to `binmode` at beginning))
 $text =~ s/Kalendarium - t.glich neu \. 734//g;
 $text =~ s/>>tirol\. ?ORF\.at//g;
 
@@ -69,7 +76,7 @@ my @tmp = split(' ',$meta{'date'});
 my $shortdate = substr $tmp[1], 0, 6;
 my $pagesubpage = $meta{'page'} . ($subpage > 0?".$subpage":"");
 my $moreinfo = "$meta{'res'} - $meta{'subres'}; $meta{'date'}";
-print "<p>$pagesubpage:</span> <b title='$moreinfo' onclick='javascript:alert(\"$moreinfo\")'>$title</b><br>$text</p>";
+print "<p>$pagesubpage:</span> <b title='$moreinfo'>$title</b><br>$text</p>";
 
 close (VTX);
 

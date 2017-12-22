@@ -269,7 +269,8 @@ int main(int argc, char **argv)
 
 //      fprintf(stderr,"data_identifier =0x%02x\n",buf[0x31]);
   for (i=0;i<4;i++) {
-    if (buf[4+i*46]==2) {
+    if (buf[4+i*46]==3) {
+    //if (buf[4+i*46]==2) {
       for (j=(8+i*46);j<(50+i*46);j++) { buf[j]=invtab[buf[j]]; }
 //          fprintf(stderr,"data[%d].data_unit_id    =0x%02x\n",i,buf[0x4+i*46]);
 //          fprintf(stderr,"data[%d].data_unit_length=0x%02x\n",i,buf[0x5+i*46]);

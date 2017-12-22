@@ -1,45 +1,51 @@
-TELETEXT SERVER
-===============
+TELETEXT SERVER - DVB-T2 Version
+================================
+
+Updated to work with DVB-T2 and the Astrometa DVB-T2 USB Stick; many improvements in `html.pl`.
 
 Installation
 ------------
 
 1. `./install.sh` as root
-2. create `freqlist.conf` (see example in `src/`)
-3. `scan -a $ADAPTERNO freqlist.conf > channels.conf`
+2. create channels.conf with `w_scan` or others; I'm using VDR format    
+   `w_scan -a /dev/dvb/adapter0/frontend1 -cAT -vv > channels.conf`
 4. use `ttxd.service` or `serv.sh` to start the service.
 
 Usage
 -----
 
 1. run `serv.sh` to tune the TV card and start spooling pages
-2. generate an HTML file by running `index.pl`
+2. generate an HTML file by running `ORFText.cgi`
 
-Caveats
--------
+Notes and Caveats
+-----------------
 
+ * The Astrometa DVB-T2 is very iffy: make sure firmware (`dvb-demod-mn88473-01.fw`) is in place and monitor dmesg when connecting/tuning (I2C errors, firmware upload). 
+   Only fix seems to be a manual reconnect (TODO: splice relay into 5V wire of USB cable)
+ * `dvbtext` had the line `if (buf[4+i*46]==2) {` replaced with `if (buf[4+i*46]==3) {` or no vtx files will be generated
  * The spool directory and DVB adapter number are hardcoded in `dvbtext`; its source is in `./src/dvbtext-src/dvbtext.c`.
- * `index.pl`, `html.pl` and `plain.pl` do not support subpages other than 0.
  * `serv.sh` does not check if the card has been tuned; it simply waits 5 seconds.
  * The spool directory is `/run/ttxd/spool/`, to avoid disk wear.
  * The accompaning systemd service is `/etc/systemd/system/ttx.service`, where the names of the processes `dvbtext`, `tzap`, and `thttpd` are hardcoded. 
  * since `killall thttpd` is used to start and stop the service, rename that executable if you already running an instance of `thttpd` for other web services.
+ * in VDR format, teletext PIDs are directly visible: `awk -F':' '{if ($8 != 0){print $1, " : ", $8}}' channels.conf|column -t -s':'`
 
 Notes
 -----
 
-Currently, the service is using `/dev/dvb/adapter0` (PCIe 05:00.0) for ORF via DVB-T. 
+Currently, the service is using `/dev/dvb/adapter0/{frontend1,demux0}` (USB) for ORF via DVB-T2. 
 
 License
 -------
 
 (C) 2017 Tobias Girstmair
-This software is distributed under the GNU General Purpose License 3. 
+This software is distributed under the GNU General Public License 3. 
 
 Included Software
 -----------------
 
 This package contains software of third parties (excluded from license): 
  * dvbtext - Dave Chapman, GNU GPL v2+ (software sightly adapted)
- * vtx2ascii - Gerd, Martin Buck (No license supplied) (software sightly adapted)
+ * vtx2ascii - Gerd, Martin Buck, GNU GPL v2(+?) (software sightly adapted)
  * thttpd - Jef Poskanzer, 2 clause BSD (modified)
+ * tzap-t2 - Igor M. Liplianin, GNU GPL v2+ (used as-is)
