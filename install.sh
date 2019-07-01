@@ -6,11 +6,9 @@ then	echo "must be root"
 fi
 
 sh -c 'cd ./src/dvbtext-src/; make'
-sh -c 'cd ./src/vtx2ascii-src/; make'
 sh -c 'cd ./src/thttpd-2.27/; make'
 sh -c 'cd ./src/szap-s2/; make'
 cp ./src/dvbtext-src/dvbtext .
-cp ./src/vtx2ascii-src/vtx2ascii .
 cp ./src/thttpd-2.27/thttpd .
 cp ./src/szap-s2/tzap-t2 .
 cp ./ttxd.service /etc/systemd/system/
